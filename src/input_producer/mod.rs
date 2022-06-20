@@ -6,10 +6,8 @@ pub mod event;
 use event::{Gesture, InputEvent};
 
 use std::fs::{File, OpenOptions};
-use std::os::unix::{
-    fs::OpenOptionsExt,
-    io::{AsRawFd, FromRawFd, IntoRawFd, RawFd},
-};
+use std::os::unix::fs::OpenOptionsExt;
+use std::os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
 use std::path::Path;
 
 use input::{Libinput, LibinputInterface};

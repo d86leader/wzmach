@@ -56,7 +56,7 @@ editing this file you need to restart wzmach.
 The default config provides description of top-level fields. Below I describe
 the available gestures and actions.
 
-#### UinputAction
+#### KeyboardInput
 
 Send keyboard events when a gesture is executed. First, it presses all the
 modifier keys in the order they appear. Then, it clicks (presses and depresses)
@@ -64,7 +64,7 @@ all the sequence keys one after another. After that, all modifier keys get
 depressed in the reverse order.
 
     // Example: start omni-completion in vim
-    UinputAction (
+    KeyboardInput (
 
         // These keys are pressed for all the duration of the action
         modifiers: ["RightControl"],
@@ -74,14 +74,14 @@ depressed in the reverse order.
 
     )
 
-#### ShellCommandAction
+#### InlineScript
 
 Run a command in the `sh` shell. All wildcards and special symbols get
 interpreted like the shell always does.
 
     // Example: toggle a scroll lock LED (works in X11 only)
-    CommandAction (
-        command: r#"
+    InlineScript (
+        code: r#"
             on=$(xset -q | grep 'Scroll Lock:' | cut -d ":" -f 7)
             echo $on
             if [ $on == "off" ]; then
@@ -97,14 +97,14 @@ The example above features a raw string literal. It's delimited by `r###"` and
 string. You can use raw string literals anywhere a string is expected in
 config, but it's most useful with this and the next action.
 
-#### CommandAction
+#### ExecuteCommand
 
-Like `ShellCommandAction`, but skip the shell and invoke the command literally.
+Like `InlineScript`, but skip the shell and invoke the command literally.
 The difference between this and that is like a difference between `system` and
 `execv`.
 
     // Example: unclutter desktop in KDE
-    CommandAction (
+    ExecuteCommand (
         // Path can be absolute (/usr/bin/qdbus-qt5) or just a command name. In
         // the second case it's looked up in $PATH
         path: "qdbus-qt5",
@@ -121,7 +121,7 @@ Note that you can use this instead of the previous action. In fact, this is
 what you should do if you want your command to run in bash or zsh instead of
 sh.
 
-    CommandAction (
+    ExecuteCommand (
         path: "/usr/bin/env",
         args: [
             "bash",

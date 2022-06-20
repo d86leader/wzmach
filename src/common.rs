@@ -22,7 +22,6 @@ pub enum RotateDirection {
     Anticlockwise,
 }
 
-
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Deserialize)]
 pub enum AnyDirection {
     Cardinal(Direction),

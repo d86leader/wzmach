@@ -2,16 +2,16 @@ use std::os::unix::prelude::CommandExt;
 
 use super::{Action, ActionError};
 
-pub struct CommandAction {
+pub struct ExecuteCommandAction {
     pub path: String,
     pub args: Vec<String>,
 }
 
-pub struct ShellCommandAction {
+pub struct InlineScriptAction {
     pub command: String,
 }
 
-impl Action for CommandAction {
+impl Action for ExecuteCommandAction {
     fn execute(&mut self) -> Result<(), ActionError> {
         log::debug!("Execute command {} {:?}", self.path, self.args);
 
@@ -27,7 +27,7 @@ impl Action for CommandAction {
     }
 }
 
-impl Action for ShellCommandAction {
+impl Action for InlineScriptAction {
     fn execute(&mut self) -> Result<(), ActionError> {
         log::debug!("Execute command {:?}", self.command);
 

@@ -1,13 +1,13 @@
 use super::{Action, ActionError};
 use uinput::event::keyboard::Key;
 
-pub struct UinputAction {
+pub struct KeyboardInputAction {
     pub device: std::rc::Rc<std::cell::RefCell<uinput::Device>>,
     pub modifiers: Vec<Key>,
     pub sequence: Vec<Key>,
 }
 
-impl UinputAction {
+impl KeyboardInputAction {
     pub fn default_device() -> std::rc::Rc<std::cell::RefCell<uinput::Device>> {
         let device = uinput::open("/dev/uinput")
             .unwrap()
@@ -22,7 +22,7 @@ impl UinputAction {
     }
 }
 
-impl Action for UinputAction {
+impl Action for KeyboardInputAction {
     fn execute(&mut self) -> Result<(), ActionError> {
         let mut device = self.device.borrow_mut();
         log::debug!("Execute action {:?} + {:?}", self.modifiers, self.sequence);

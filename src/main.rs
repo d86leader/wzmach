@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use bpaf::construct;
 
 mod action;
@@ -44,7 +46,7 @@ fn parse_opts() -> Opts {
         .help("Path to a config file to use instead of default")
         .argument("PATH")
         .optional();
-    let run = construct!(Opts::Run {config_path});
+    let run = construct!(Opts::Run { config_path });
 
     let parser = debug_config
         .or_else(debug_gestures)
@@ -77,21 +79,78 @@ fn main() {
             }
         }
 
-        Opts::Run {config_path} => run(config_path),
+        Opts::Run { config_path } => run(config_path),
     }
 }
 
+/// Builds a [`PathBuf`] from string literals and identifiers. Slash separators
+/// are optional (`/`) between items. A beginning slash is significant as it
+/// will push `/` to the buffer first. A trailing slash at the end of an
+/// invocation is ignored. String literals are pushed into the buffer directly
+/// as path components, and identifiers are trated as environment variable
+/// names. If any of the environment variables used in the invocation
+/// are undefined, the expression will resolve to `None`.
+macro_rules! env_path {
+    (@root $buffer:ident | / $($tail:tt)*) => {
+        $buffer.push("/");
+        env_path!(@push $buffer | $($tail)*)
+    };
+    (@root $buffer:ident | $($tail:tt)*) => {
+        env_path!(@push $buffer | $($tail)*)
+    };
+    (@push $buffer:ident | $(/)?) => {};
+    (@push $buffer:ident | $(/)? $segment:literal $($tail:tt)*) => {
+        $buffer.push($segment);
+        env_path!(@push $buffer | $($tail)*)
+    };
+    (@push $buffer:ident | $(/)? $variable:ident $($tail:tt)*) => {
+        $buffer.push(std::env::var_os(stringify!($variable))?);
+        env_path!(@push $buffer | $($tail)*)
+    };
+    ($($munch:tt)*) => {(|| {
+        use std::path::PathBuf;
+        let mut buffer = PathBuf::new();
+        env_path!(@root buffer | $($munch)*);
+        Some(buffer)
+    })()};
+}
+
 fn run(command_config: Option<String>) {
+    let default_config_path: &Path = Path::new("/etc/wzmach/config.ron");
+    let config_paths = &[
+        command_config.map(PathBuf::from),
+        env_path!(XDG_CONFIG_HOME / "wzmach.ron"),
+        env_path!(XDG_CONFIG_HOME / "wzmach" / "config.ron"),
+        env_path!(HOME / ".config" / "wzmach.ron"),
+        env_path!(HOME / ".config" / "wzmach" / "config.ron"),
+    ];
+
+    // let is_root = nix::unistd::getuid().is_root();
+
+    if default_config_path.is_file() {
+        log::warn!(
+            "The default config expected at '{}' was not found!",
+            default_config_path.to_string_lossy()
+        );
+
+        // TODO: Create the default config file. Requires `serde::Serialize` on `config::Config`.
+        // if is_root {
+        //     log::info!("Creating the default config file.");
+        // }
+    }
+
+    // find config path
+
+    let config_path = config_paths.iter().flatten().find(|path| path.is_file());
+
     // read config
-    let config_path = command_config.unwrap_or_else(|| {
-        let home = std::env::var_os("HOME").unwrap().into_string().unwrap();
-        let config_home = std::env::var_os("XDG_CONFIG_HOME")
-            .map(|x| x.into_string().unwrap())
-            .unwrap_or_else(|| home + "/.config");
-        let config_dir = config_home + "/wzmach/";
-        config_dir + "config.ron"
-    });
-    let config = config::Config::load(config_path).unwrap_or_default();
+
+    // TODO: Improve logging here, this doesn't say it's using default.
+    let config = config_path
+        .map(config::Config::load)
+        .and_then(Result::ok)
+        .unwrap_or_default();
+
     let is_wayland = std::env::var_os("WAYLAND_DISPLAY").is_some();
 
     // run

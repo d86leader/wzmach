@@ -3,8 +3,8 @@
 //! pub(crate): These triggers can also perform computations to see if events
 //! match them
 
+use crate::common::{AnyDirection, Direction, PinchDirection, RotateDirection};
 use crate::input_producer::event::{HoldGesture, PinchGesture, SwipeGesture};
-use crate::common::{Direction, PinchDirection, RotateDirection, AnyDirection};
 
 const VSLOPE: f64 = 1.0;
 const HSLOPE: f64 = 1.0 / VSLOPE;
@@ -97,15 +97,13 @@ impl CardinalTrigger {
     pub(crate) fn matches_swipe(&self, gest: &SwipeGesture, o: Origin) -> bool {
         self.fingers == gest.fingers
             && self.direction.matches(gest.dx - o.x, gest.dy - o.y)
-            && ((gest.dx - o.x).abs() >= self.distance
-                || (gest.dy - o.y).abs() >= self.distance)
+            && ((gest.dx - o.x).abs() >= self.distance || (gest.dy - o.y).abs() >= self.distance)
     }
     // TODO: deduplicate. Same implementation, different types with same shape
     pub(crate) fn matches_shear(&self, gest: &PinchGesture, o: Origin) -> bool {
         self.fingers == gest.fingers
             && self.direction.matches(gest.dx - o.x, gest.dy - o.y)
-            && ((gest.dx - o.x).abs() >= self.distance
-                || (gest.dy - o.y).abs() >= self.distance)
+            && ((gest.dx - o.x).abs() >= self.distance || (gest.dy - o.y).abs() >= self.distance)
     }
 }
 

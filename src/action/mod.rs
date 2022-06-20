@@ -11,5 +11,5 @@ pub trait Action {
     fn execute(&mut self) -> Result<(), ActionError>;
 }
 
-pub use uinput_action::UinputAction;
-pub use command_action::{CommandAction, ShellCommandAction};
+pub use command_action::{ExecuteCommandAction, InlineScriptAction};
+pub use uinput_action::KeyboardInputAction;

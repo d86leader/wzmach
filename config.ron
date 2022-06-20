@@ -25,7 +25,7 @@
                 direction: Up,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["RightControl"],
                 sequence: ["T"],
             )
@@ -38,7 +38,7 @@
                 direction: Down,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["RightControl"],
                 sequence: ["W"],
             )
@@ -51,7 +51,7 @@
                 direction: Left,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["RightControl"],
                 sequence: ["PageDown"],
             )
@@ -64,7 +64,7 @@
                 direction: Right,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["RightControl"],
                 sequence: ["PageUp"],
             )
@@ -83,7 +83,7 @@
                 direction: Up,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["LeftMeta"],
                 sequence: ["W"],
             )
@@ -96,7 +96,7 @@
                 direction: Left,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["LeftMeta"],
                 sequence: ["Right"],
             )
@@ -109,7 +109,7 @@
                 direction: Right,
                 repeated: false,
             ),
-            action: UinputAction (
+            action: KeyboardInput (
                 modifiers: ["LeftMeta"],
                 sequence: ["Left"],
             )

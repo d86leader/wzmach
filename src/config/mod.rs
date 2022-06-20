@@ -46,16 +46,16 @@ pub struct ConfigTrigger {
 
 #[derive(PartialEq, Debug, Deserialize)]
 pub enum ConfigAction {
-    UinputAction {
+    KeyboardInput {
         modifiers: Vec<key::ConfigKey>,
         sequence: Vec<key::ConfigKey>,
     },
-    CommandAction {
+    ExecuteCommand {
         path: String,
         args: Vec<String>,
     },
-    ShellCommandAction {
-        command: String,
+    InlineScript {
+        code: String,
     },
 }
 
@@ -65,18 +65,20 @@ impl ConfigAction {
         input_device: &std::rc::Rc<std::cell::RefCell<uinput::Device>>,
     ) -> Box<dyn action::Action> {
         match self {
-            ConfigAction::UinputAction {
+            ConfigAction::KeyboardInput {
                 modifiers,
                 sequence,
-            } => Box::new(action::UinputAction {
+            } => Box::new(action::KeyboardInputAction {
                 device: input_device.clone(),
                 modifiers: modifiers.iter().map(|x| x.0).collect(),
                 sequence: sequence.iter().map(|x| x.0).collect(),
             }),
-            ConfigAction::CommandAction { path, args } =>
-                Box::new(action::CommandAction { path, args }),
-            ConfigAction::ShellCommandAction { command } =>
-                Box::new(action::ShellCommandAction { command }),
+            ConfigAction::ExecuteCommand { path, args } => {
+                Box::new(action::ExecuteCommandAction { path, args })
+            }
+            ConfigAction::InlineScript { code: command } => {
+                Box::new(action::InlineScriptAction { command })
+            }
         }
     }
 }
@@ -86,9 +88,10 @@ impl ConfigAction {
 impl Config {
     pub fn load<P>(path: P) -> std::io::Result<Config>
     where
-        P: AsRef<std::path::Path> + std::fmt::Display,
+        P: AsRef<std::path::Path>,
     {
-        log::trace!("Reading {}", path);
+        let path = path.as_ref();
+        log::trace!("Reading {}", path.display());
         let s = std::fs::read_to_string(path).map_err(|e| {
             log::error!("Error reading config: {}", e);
             e
@@ -103,7 +106,7 @@ impl Config {
         self,
         is_wayland: bool,
     ) -> (Vec<gesture::Trigger>, Vec<Box<dyn action::Action>>) {
-        let input_device = action::UinputAction::default_device();
+        let input_device = action::KeyboardInputAction::default_device();
         self.global_triggers
             .into_iter()
             .chain(
